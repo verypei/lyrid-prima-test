@@ -79,6 +79,36 @@ export default function WorkersTable() {
     router.push(`/workers/${id}`);
   };
 
+  const handleDelete = async (id) => {
+    // Show confirmation popup
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this worker?"
+    );
+    if (!confirmed) return; // If user clicks "Cancel", do nothing
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/v1/worker/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Remove deleted worker from state
+        setWorkers(workers.filter((worker) => worker.id !== id));
+        alert(data.message[0]);
+      } else {
+        alert(data.message || "Failed to delete worker");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    }
+  };
+
   return (
     <div className="container mt-5">
       <h2 className="mb-4">Workers Table</h2>
