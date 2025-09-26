@@ -1,11 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import AddWorkerModal from "./addModalWorker.js";
+import { useRouter } from "next/navigation";
 
 export default function WorkersTable() {
   const [workers, setWorkers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [newWorker, setNewWorker] = useState({ name: "", position: "" });
+  const router = useRouter();
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -66,6 +68,10 @@ export default function WorkersTable() {
     }
   };
 
+  const handleDetail = (id) => {
+    router.push(`/workers/${id}`);
+  };
+
   return (
     <div className="container mt-5">
       <h2 className="mb-4">Workers Table</h2>
@@ -83,7 +89,7 @@ export default function WorkersTable() {
             <th>ID</th>
             <th>Name</th>
             <th>Position</th>
-            <th>actions</th>
+            <th>detail</th>
           </tr>
         </thead>
         <tbody>
@@ -92,7 +98,15 @@ export default function WorkersTable() {
               <td>{worker.id}</td>
               <td>{worker.name}</td>
               <td>{worker.position}</td>
-              <td>edit delete</td>
+              <td>
+                <a
+                  href={`/workers/${worker.id}`}
+                  className="btn btn-info btn-sm"
+                  onClick={() => handleDetail(worker.id)}
+                >
+                  View
+                </a>
+              </td>
             </tr>
           ))}
         </tbody>
