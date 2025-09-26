@@ -8,7 +8,11 @@ import {
     Param,
     NotFoundException,
     UseInterceptors,
-    UseGuards
+    UseGuards,
+    UploadedFile,
+    HttpException,
+    HttpStatus,
+    Patch
 } from '@nestjs/common';
 import { WorkersService } from './workers.service';
 import { WorkerDto } from 'src/dto/worker.dto';
@@ -57,21 +61,57 @@ export class WorkersController {
                 },
             }),
             fileFilter: (req, file, callback) => {
-                if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
-                    return callback(new Error('Only image files are allowed!'), false);
+                if (!file.mimetype.match(/\/(jpg|jpeg)$/)) {
+                    return callback(new Error('Only image files with ext jpg or jpeg are allowed!'), false);
                 }
                 callback(null, true);
             },
             limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
         }),
     )
-    async create(@Body() createWorkerDto: WorkerDto) {
-        return this.workersService.create(createWorkerDto);
+    async create(@Body() createWorkerDto: WorkerDto, @UploadedFile() file: Express.Multer.File) {
+        try {
+            if (!file) {
+                throw new HttpException("image must be filled", HttpStatus.BAD_REQUEST)
+            }
+            createWorkerDto.profile = file.path
+            return this.workersService.create(createWorkerDto)
+        } catch (error) {
+            throw error;
+        }
     }
 
     // Update a worker by ID
-    @Put('worker/:id')
-    async update(@Param('id') id: number, @Body() updateWorkerDto: WorkerDto) {
+    @Patch('worker/:id')
+    @UseInterceptors(
+        FileInterceptor('file', {
+            storage: diskStorage({
+                destination: './src/assets', // folder to save uploaded files
+                filename: (req, file, callback) => {
+                    // Customize file name: originalname + timestamp + extension
+                    const name = file.originalname.split('.')[0];
+                    const fileExt = extname(file.originalname);
+                    const timestamp = Date.now();
+                    callback(null, `${name}-${timestamp}${fileExt}`);
+                },
+            }),
+            fileFilter: (req, file, callback) => {
+                if (!file.mimetype.match(/\/(jpg|jpeg)$/)) {
+                    return callback(new Error('Only image files with ext jpg or jpeg are allowed!'), false);
+                }
+                callback(null, true);
+            },
+            limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+        }),
+    )
+    async update(@Param('id') id: number, @Body() updateWorkerDto: WorkerDto, @UploadedFile() file: Express.Multer.File) {
+        const exist = await this.findOne(id)
+        if (!exist) {
+            throw new HttpException("data not found", HttpStatus.NOT_FOUND)
+        }
+        if (file) {
+            updateWorkerDto.profile = file.path
+        }
         const updated = await this.workersService.update(id, updateWorkerDto);
         if (!updated) {
             throw new NotFoundException(`Worker with ID ${id} not found`);
@@ -80,7 +120,7 @@ export class WorkersController {
     }
 
     // Delete a worker by ID
-    @Delete('workers/:id')
+    @Delete('worker/:id')
     async remove(@Param('id') id: number) {
         const deleted = await this.workersService.remove(id);
         if (!deleted) {
