@@ -1,11 +1,14 @@
+import { WorkersModule } from './workers/workers.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthModule } from './auth/auth.module';
 import { Users } from './entity/users.entity';
+import { Worker } from './entity/workers.entity';
 
 @Module({
   imports: [
+    WorkersModule,
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true, // Makes .env available globally
@@ -29,7 +32,7 @@ import { Users } from './entity/users.entity';
         },
       }),
     }),
-    SequelizeModule.forFeature([Users])
+    SequelizeModule.forFeature([Users, Worker])
   ],
   controllers: [],
   providers: [],
