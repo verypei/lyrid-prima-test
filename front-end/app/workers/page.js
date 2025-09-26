@@ -31,7 +31,7 @@ export default function WorkersTable() {
       }
     };
     fetchWorkers();
-  }, [workers]);
+  }, [token]);
 
   const handleChange = (e) => {
     setNewWorker({ ...newWorker, [e.target.name]: e.target.value });

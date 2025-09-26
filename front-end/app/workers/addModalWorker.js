@@ -20,7 +20,6 @@ export default function AddWorkerModal({
       e.target.value = null; // reset input
       return;
     }
-
     setFile(selectedFile);
   };
   // Wrapper to include file in submission
