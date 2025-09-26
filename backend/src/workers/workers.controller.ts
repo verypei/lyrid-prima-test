@@ -39,6 +39,8 @@ export class WorkersController {
     // Get one worker by ID
     @Get('worker/:id')
     async findOne(@Param('id') id: number) {
+        console.log("get by id---->");
+
         const worker = await this.workersService.findOne(id);
         if (!worker) {
             throw new NotFoundException(`Worker with ID ${id} not found`);
@@ -71,10 +73,12 @@ export class WorkersController {
     )
     async create(@Body() createWorkerDto: WorkerDto, @UploadedFile() file: Express.Multer.File) {
         try {
+            console.log(createWorkerDto, "---", file);
+
             if (!file) {
                 throw new HttpException("image must be filled", HttpStatus.BAD_REQUEST)
             }
-            createWorkerDto.profile = file.path
+            createWorkerDto.profile = file.filename
             return this.workersService.create(createWorkerDto)
         } catch (error) {
             throw error;

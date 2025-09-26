@@ -31,7 +31,7 @@ export class WorkersService {
     async create(createWorkerDto: WorkerDto) {
         try {
             const worker = await this.workerModel.create(createWorkerDto);
-            return worker && "data created successfully";
+            return worker
 
         } catch (error) {
             throw new HttpException("create data failed", error.message)
