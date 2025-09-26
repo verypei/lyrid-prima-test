@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import AddWorkerModal from "./addModalWorker.js";
 import { useRouter } from "next/navigation";
+import { autoExpireToken, getToken } from "@/helpers/token.js";
 
 export default function WorkersTable() {
   const [workers, setWorkers] = useState([]);
@@ -14,7 +15,14 @@ export default function WorkersTable() {
 
   useEffect(() => {
     const fetchWorkers = async () => {
-      if (!token) return;
+      // if (!token) return;
+      autoExpireToken(router); // auto-remove after expiry
+
+      const token = getToken();
+      if (!token) {
+        router.push("/");
+        return;
+      }
       try {
         const res = await fetch("http://localhost:5000/api/v1/workers", {
           headers: {
@@ -23,7 +31,6 @@ export default function WorkersTable() {
           },
         });
         const data = await res.json();
-        console.log(data, "dara----");
 
         if (res.ok) setWorkers(data.data);
       } catch (err) {
@@ -90,6 +97,7 @@ export default function WorkersTable() {
             <th>Name</th>
             <th>Position</th>
             <th>detail</th>
+            <th>actions</th>
           </tr>
         </thead>
         <tbody>
@@ -99,13 +107,26 @@ export default function WorkersTable() {
               <td>{worker.name}</td>
               <td>{worker.position}</td>
               <td>
-                <a
-                  href={`/workers/${worker.id}`}
+                <button
                   className="btn btn-info btn-sm"
-                  onClick={() => handleDetail(worker.id)}
+                  onClick={() => handleView(worker.id)}
                 >
                   View
-                </a>
+                </button>
+              </td>
+              <td>
+                <button
+                  className="btn btn-warning btn-sm me-2"
+                  onClick={() => handleEdit(worker.id)}
+                >
+                  Edit
+                </button>
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() => handleDelete(worker.id)}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}

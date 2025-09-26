@@ -12,26 +12,32 @@ export default function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Example API request
-    const res = await fetch("http://localhost:5000/api/v1/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        password,
-        role,
-      }),
-    });
+    try {
+      const res = await fetch("http://localhost:5000/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role }),
+      });
 
-    const data = await res.json();
-    console.log("Full response:", data);
+      const data = await res.json();
+      console.log("Full response:", data);
 
-    if (data.status) {
-      const token = data.data.access_token;
-      localStorage.setItem("token", token);
-      router.push("/workers"); // redirect
-    } else {
-      alert(data.message || "Login failed");
+      if (data.status) {
+        const token = data.data.access_token;
+
+        // Store token along with expiry (optional, if you want auto expiry)
+        const expiresIn = 60 * 60 * 1000; // 1 hour
+        const expiryTime = Date.now() + expiresIn;
+        localStorage.setItem("token", token);
+        localStorage.setItem("tokenExpiry", expiryTime);
+
+        router.push("/workers"); // redirect after login
+      } else {
+        alert(data.message || "Login failed");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
     }
   };
 
