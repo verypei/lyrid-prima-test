@@ -8,7 +8,7 @@ untuk menjalankan :
     - npm install
     - create own database, create .env
     - .env format : 
-    - DB_HOST=localhost
+    - DB_HOST=
       DB_PORT=
       DB_USER=
       DB_PASS=
