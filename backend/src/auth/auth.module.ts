@@ -13,7 +13,7 @@ import { JwtStrategy } from 'src/guard/jwtStrategy';
     imports: [
         JwtModule.register({
             secret: process.env.JWT_SECRET || 'secret', // change to env in production
-            signOptions: { expiresIn: '1h' }, // token expiration
+            signOptions: { expiresIn: '4h' }, // token expiration
         }),
     ],
     controllers: [AuthController],

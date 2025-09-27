@@ -19,19 +19,16 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password, role }),
       });
 
-      const data = await res.json();
-      console.log("Full response:", data);
-
+      const data = await res.json(); 
       if (data.status) {
         const token = data.data.access_token;
 
-        // Store token along with expiry (optional, if you want auto expiry)
-        const expiresIn = 60 * 60 * 1000; // 1 hour
+        const expiresIn = 60 * 60 * 4000; //4 hour, sama dengan back end
         const expiryTime = Date.now() + expiresIn;
         localStorage.setItem("token", token);
         localStorage.setItem("tokenExpiry", expiryTime);
 
-        router.push("/workers"); // redirect after login
+        router.push("/workers");
       } else {
         alert(data.message || "Login failed");
       }

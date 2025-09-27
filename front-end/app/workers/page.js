@@ -3,11 +3,15 @@ import { useEffect, useState } from "react";
 import AddWorkerModal from "./addModalWorker.js";
 import { useRouter } from "next/navigation";
 import { autoExpireToken, getToken } from "@/helpers/token.js";
+import EditWorkerModal from "./editModalWorker.js";
 
 export default function WorkersTable() {
   const [workers, setWorkers] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [newWorker, setNewWorker] = useState({ name: "", position: "" });
+  const [editWorker, setEditWorker] = useState(null);
+
   const router = useRouter();
 
   const token =
@@ -15,10 +19,9 @@ export default function WorkersTable() {
 
   useEffect(() => {
     const fetchWorkers = async () => {
-      // if (!token) return;
-      autoExpireToken(router); // auto-remove after expiry
-
+      autoExpireToken(router);
       const token = getToken();
+
       if (!token) {
         router.push("/");
         return;
@@ -31,8 +34,9 @@ export default function WorkersTable() {
           },
         });
         const data = await res.json();
-
-        if (res.ok) setWorkers(data.data);
+        if (res.ok) {
+          setWorkers(data.data);
+        }
       } catch (err) {
         console.error(err);
       }
@@ -42,6 +46,36 @@ export default function WorkersTable() {
 
   const handleChange = (e) => {
     setNewWorker({ ...newWorker, [e.target.name]: e.target.value });
+  };
+
+  const handleUpdateWorker = async (id, { name, position, file }) => {
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("position", position);
+    if (file) formData.append("file", file);
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/v1/worker/${id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setWorkers((prev) => {
+          console.log(prev, "===prev==");
+          return prev.map((w) => (w.id === id ? data.data : w));
+        });
+        console.log(workers, "---after edit--->");
+        setShowEditModal(false);
+        setEditWorker(null);
+      } else {
+        alert(data.message || "Failed to update worker");
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleAddWorker = async (file) => {
@@ -63,10 +97,10 @@ export default function WorkersTable() {
       if (res.ok) {
         setWorkers([...workers, data.data]);
         setShowModal(false);
-        setNewWorker({
-          name: "",
-          position: "",
-        });
+        // setNewWorker({
+        //   name: "",
+        //   position: "",
+        // });
       } else {
         alert(data.message[0] || "Failed to add worker");
       }
@@ -99,6 +133,7 @@ export default function WorkersTable() {
       if (res.ok) {
         // Remove deleted worker from state
         setWorkers(workers.filter((worker) => worker.id !== id));
+        // setReloadWorkers((prev) => !prev);
         alert(data.message[0]);
       } else {
         alert(data.message || "Failed to delete worker");
@@ -139,7 +174,7 @@ export default function WorkersTable() {
               <td>
                 <button
                   className="btn btn-info btn-sm"
-                  onClick={() => handleView(worker.id)}
+                  onClick={() => handleDetail(worker.id)}
                 >
                   View
                 </button>
@@ -147,7 +182,10 @@ export default function WorkersTable() {
               <td>
                 <button
                   className="btn btn-warning btn-sm me-2"
-                  onClick={() => handleEdit(worker.id)}
+                  onClick={() => {
+                    setEditWorker(worker);
+                    setShowEditModal(true);
+                  }}
                 >
                   Edit
                 </button>
@@ -170,6 +208,13 @@ export default function WorkersTable() {
         onSubmit={handleAddWorker}
         newWorker={newWorker}
         handleChange={handleChange}
+      />
+
+      <EditWorkerModal
+        show={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSubmit={handleUpdateWorker}
+        worker={editWorker}
       />
     </div>
   );
