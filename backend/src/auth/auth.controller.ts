@@ -13,8 +13,6 @@ export class AuthController {
     @Post('login')
     async login(@Body() loginData: LoginDTO) {
         try {
-            console.log(loginData, "--login  data--->");
-
             return await this.authService.login(loginData)
         } catch (error) {
             throw error

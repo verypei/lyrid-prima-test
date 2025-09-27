@@ -43,8 +43,8 @@ export class WorkersService {
         try {
             const worker = await this.workerModel.findByPk(id);
             if (!worker) throw new NotFoundException(`Worker with ID ${id} not found`);
-            await worker.update(updateWorkerDto);
-            return "data edited successfully"
+            const updated = await worker.update(updateWorkerDto);
+            return updated
         } catch (error) {
             throw error
         }
