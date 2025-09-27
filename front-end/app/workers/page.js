@@ -64,10 +64,8 @@ export default function WorkersTable() {
 
       if (res.ok) {
         setWorkers((prev) => {
-          console.log(prev, "===prev==");
           return prev.map((w) => (w.id === id ? data.data : w));
         });
-        console.log(workers, "---after edit--->");
         setShowEditModal(false);
         setEditWorker(null);
       } else {
@@ -97,10 +95,6 @@ export default function WorkersTable() {
       if (res.ok) {
         setWorkers([...workers, data.data]);
         setShowModal(false);
-        // setNewWorker({
-        //   name: "",
-        //   position: "",
-        // });
       } else {
         alert(data.message[0] || "Failed to add worker");
       }
