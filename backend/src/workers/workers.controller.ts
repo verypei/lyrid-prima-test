@@ -110,7 +110,7 @@ export class WorkersController {
             throw new HttpException("data not found", HttpStatus.NOT_FOUND)
         }
         if (file) {
-            updateWorkerDto.profile = file.path
+            updateWorkerDto.profile = file.filename
         }
         const updated = await this.workersService.update(id, updateWorkerDto);
         if (!updated) {
